@@ -1,0 +1,74 @@
+{
+  "_note": "Local signature database of known-vulnerable front-end component versions. A component version is flagged when it is BELOW the 'fixed_in' version of a listed vulnerability. Extend this file with entries from the NVD / GitHub Advisory databases to broaden coverage.",
+  "libraries": [
+    {
+      "name": "jQuery",
+      "patterns": ["jquery[-.](\\d+\\.\\d+(?:\\.\\d+)?)", "jquery.*?[?&]ver=(\\d+\\.\\d+(?:\\.\\d+)?)", "jQuery\\s+v?(\\d+\\.\\d+(?:\\.\\d+)?)"],
+      "vulnerabilities": [
+        {"fixed_in": "3.5.0", "cve": "CVE-2020-11022", "severity": "medium", "summary": "Potential XSS via jQuery.htmlPrefilter when passing HTML from untrusted sources."},
+        {"fixed_in": "3.0.0", "cve": "CVE-2015-9251", "severity": "medium", "summary": "Cross-site scripting via cross-domain AJAX requests returning text/javascript."}
+      ]
+    },
+    {
+      "name": "Bootstrap",
+      "patterns": ["bootstrap[-.](\\d+\\.\\d+(?:\\.\\d+)?)", "bootstrap.*?[?&]ver=(\\d+\\.\\d+(?:\\.\\d+)?)"],
+      "vulnerabilities": [
+        {"fixed_in": "3.4.1", "cve": "CVE-2019-8331", "severity": "medium", "summary": "XSS in the tooltip/popover data-template attribute."},
+        {"fixed_in": "4.3.1", "cve": "CVE-2019-8331", "severity": "medium", "summary": "XSS in the tooltip/popover data-template attribute (4.x line, fixed in 4.3.1)."}
+      ]
+    },
+    {
+      "name": "AngularJS",
+      "patterns": ["angular[-.](\\d+\\.\\d+(?:\\.\\d+)?)", "AngularJS\\s+v?(\\d+\\.\\d+(?:\\.\\d+)?)"],
+      "vulnerabilities": [
+        {"fixed_in": "1.8.0", "cve": "CVE-2020-7676", "severity": "medium", "summary": "angular.js XSS due to improper sanitisation of SVG/attributes."},
+        {"fixed_in": "1.6.0", "cve": "CVE-2019-10768", "severity": "high", "summary": "Prototype pollution in merge/extend helpers."}
+      ]
+    },
+    {
+      "name": "Lodash",
+      "patterns": ["lodash[-.](\\d+\\.\\d+(?:\\.\\d+)?)", "lodash.*?[?&]ver=(\\d+\\.\\d+(?:\\.\\d+)?)"],
+      "vulnerabilities": [
+        {"fixed_in": "4.17.21", "cve": "CVE-2021-23337", "severity": "high", "summary": "Command injection via template (lodash.template) before 4.17.21."},
+        {"fixed_in": "4.17.12", "cve": "CVE-2019-10744", "severity": "high", "summary": "Prototype pollution via defaultsDeep before 4.17.12."}
+      ]
+    },
+    {
+      "name": "Moment.js",
+      "patterns": ["moment[-.](\\d+\\.\\d+(?:\\.\\d+)?)", "moment.*?[?&]ver=(\\d+\\.\\d+(?:\\.\\d+)?)"],
+      "vulnerabilities": [
+        {"fixed_in": "2.29.4", "cve": "CVE-2022-31129", "severity": "high", "summary": "Inefficient regex causing ReDoS in rfc2822 date parsing."}
+      ]
+    },
+    {
+      "name": "Handlebars",
+      "patterns": ["handlebars[-.](\\d+\\.\\d+(?:\\.\\d+)?)"],
+      "vulnerabilities": [
+        {"fixed_in": "4.7.7", "cve": "CVE-2021-23369", "severity": "high", "summary": "Remote code execution via prototype pollution in the compiler."}
+      ]
+    },
+    {
+      "name": "DOMPurify",
+      "patterns": ["purify[-.](\\d+\\.\\d+(?:\\.\\d+)?)", "DOMPurify\\s+(\\d+\\.\\d+(?:\\.\\d+)?)"],
+      "vulnerabilities": [
+        {"fixed_in": "2.0.17", "cve": "CVE-2020-26870", "severity": "medium", "summary": "Sanitiser bypass leading to XSS before 2.0.17."}
+      ]
+    }
+  ],
+  "servers": [
+    {
+      "name": "Apache httpd",
+      "patterns": ["Apache/(\\d+\\.\\d+\\.\\d+)"],
+      "vulnerabilities": [
+        {"fixed_in": "2.4.52", "cve": "CVE-2021-44790", "severity": "critical", "summary": "Buffer overflow in mod_lua multipart parsing."}
+      ]
+    },
+    {
+      "name": "nginx",
+      "patterns": ["nginx/(\\d+\\.\\d+\\.\\d+)"],
+      "vulnerabilities": [
+        {"fixed_in": "1.21.0", "cve": "CVE-2021-23017", "severity": "high", "summary": "Off-by-one in the DNS resolver (remote memory corruption)."}
+      ]
+    }
+  ]
+}

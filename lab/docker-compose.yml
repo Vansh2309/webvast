@@ -1,0 +1,29 @@
+# Vulnerable practice targets for WebVAST.
+#
+# These are well-known, purpose-built insecure applications used for security
+# training. Run them ONLY on your own machine / an isolated lab network.
+#
+#   docker compose -f lab/docker-compose.yml up -d
+#
+# Then scan, e.g.:  http://localhost:3000  (Juice Shop)
+#                   http://localhost:8081  (DVWA, login admin/password)
+#
+# Stop with:  docker compose -f lab/docker-compose.yml down
+#
+# No Docker installed? Use the bundled demo target instead:
+#   python backend/demo_target/app.py   ->   http://localhost:5001
+
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:v17.1.1
+    container_name: webvast-juiceshop
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    container_name: webvast-dvwa
+    ports:
+      - "127.0.0.1:8081:80"
+    restart: unless-stopped
