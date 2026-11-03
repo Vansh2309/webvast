@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.api.routes import router
+from app.config import settings
 from app.models import database as db
 
 
@@ -27,10 +28,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# The React dev server runs on a different origin during development.
+# The React frontend runs on a different origin (the Vite dev server in
+# development, or a hosted deployment in production). Allowed origins come from
+# config (local-dev defaults + anything in WEBVAST_CORS_ORIGINS).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=settings.cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

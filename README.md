@@ -107,6 +107,45 @@ npm install
 npm run dev                                       # http://localhost:5173
 ```
 
+### Hosting the dashboard (frontend-only, e.g. Vercel)
+
+The **dashboard is a static SPA** and can be hosted on Vercel/Netlify/any static
+host. The **scan engine is not deployed** — it is a long-running, stateful backend
+that makes outbound requests to targets, so it stays on a machine **you** control.
+A hosted dashboard is just a UI: it is inert unless it is pointed at a backend that
+is reachable *from your browser*, which in the default setup means your own machine.
+
+> ⚠️ **Never expose a working scanner on a public URL.** A publicly reachable scan
+> backend is an open attack tool (unauthorized scanning / SSRF). Keep the backend
+> local, or firewalled and behind authentication, and only ever scan targets you
+> are authorized to test.
+
+**1. Point the dashboard at your backend.** The API base URL is a build-time env
+var, `VITE_API_BASE` (see `frontend/.env.example`). Unset = local dev (Vite proxy).
+For a hosted build, set it to the backend you run, e.g. `http://localhost:8000`
+(browsers treat `localhost` as a secure context, so an HTTPS page may call it — but
+only from the machine where that backend runs).
+
+**2. Deploy on Vercel.** Import this repo, then in the project settings set:
+
+| Setting | Value |
+|---------|-------|
+| **Root Directory** | `frontend` |
+| **Framework Preset** | Vite (auto-detected) |
+| **Environment Variable** | `VITE_API_BASE` = `http://localhost:8000` |
+
+(`frontend/vercel.json` already pins the build command, output dir and SPA rewrite.)
+Or with the CLI: `cd frontend && vercel --prod`.
+
+**3. Allow the dashboard's origin on the backend.** Set `WEBVAST_CORS_ORIGINS` to a
+comma-separated list of allowed origins before starting the API:
+
+```bash
+WEBVAST_CORS_ORIGINS="https://your-app.vercel.app" uvicorn app.main:app --port 8000
+```
+
+Then open your Vercel URL, run the backend locally, and scan the demo target.
+
 ---
 
 ## 3. How each scanner works

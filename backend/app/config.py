@@ -10,6 +10,14 @@ import os
 from dataclasses import dataclass, field
 from typing import List
 
+_DEFAULT_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
+
+def _parse_origins(raw: str) -> List[str]:
+    """Merge the built-in local-dev origins with any from WEBVAST_CORS_ORIGINS."""
+    extra = [o.strip().rstrip("/") for o in raw.split(",") if o.strip()]
+    return list(dict.fromkeys(_DEFAULT_ORIGINS + extra))  # de-dup, keep order
+
 
 @dataclass
 class Settings:
@@ -27,6 +35,15 @@ class Settings:
 
     # --- storage ----------------------------------------------------------
     db_path: str = os.environ.get("WEBVAST_DB", "webvast.db")
+
+    # --- CORS -------------------------------------------------------------
+    # Browser origins allowed to call the API. Defaults cover local dev.
+    # To let a hosted frontend (e.g. a Vercel deployment) reach a backend you
+    # run yourself, set WEBVAST_CORS_ORIGINS to a comma-separated list, e.g.:
+    #   WEBVAST_CORS_ORIGINS="https://webvast.vercel.app,https://webvast-you.vercel.app"
+    cors_origins: List[str] = field(default_factory=lambda: _parse_origins(
+        os.environ.get("WEBVAST_CORS_ORIGINS", "")
+    ))
 
     # --- safety -----------------------------------------------------------
     # Hosts that must NEVER be scanned, even if a user puts them in scope.
