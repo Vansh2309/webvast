@@ -132,19 +132,36 @@ only from the machine where that backend runs).
 |---------|-------|
 | **Root Directory** | `frontend` |
 | **Framework Preset** | Vite (auto-detected) |
-| **Environment Variable** | `VITE_API_BASE` = `http://localhost:8000` |
+| **Environment Variable** | `VITE_DEMO` = `1` |
 
 (`frontend/vercel.json` already pins the build command, output dir and SPA rewrite.)
 Or with the CLI: `cd frontend && vercel --prod`.
 
-**3. Allow the dashboard's origin on the backend.** Set `WEBVAST_CORS_ORIGINS` to a
-comma-separated list of allowed origins before starting the API:
+#### Why demo mode for a public URL
+
+A browser **blocks a public `https://` page from reaching a private `localhost`
+backend**, and exposing a *working* scanner on a public URL would be an open attack
+tool. So a hosted build runs in **demo mode** (`VITE_DEMO=1`): it serves a captured
+sample scan entirely in the browser — modules, a simulated scan run, the 13 findings,
+severity scoring and the HTML/JSON reports — with **no backend and no real scanning**.
+It is a faithful, risk-free showcase. (If `VITE_DEMO` is unset, the app probes the
+backend on load and falls back to demo mode automatically when none is reachable.)
+
+For **real scanning**, run WebVAST locally (`./run.sh`) — that is the supported path
+for authorized testing.
+
+#### Live hosted mode (advanced, your own infrastructure)
+
+To make a hosted dashboard actually scan, the backend must be reachable from the
+browser over **HTTPS** (not `localhost`). Set `VITE_API_BASE` to that backend's URL
+instead of `VITE_DEMO`, and allow the frontend origin on the backend:
 
 ```bash
 WEBVAST_CORS_ORIGINS="https://your-app.vercel.app" uvicorn app.main:app --port 8000
 ```
 
-Then open your Vercel URL, run the backend locally, and scan the demo target.
+⚠️ Only do this behind authentication / a firewall and scoped to targets you are
+authorized to test. **Never leave a working scanner open on a public URL.**
 
 ---
 

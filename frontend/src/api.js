@@ -1,14 +1,24 @@
-// Thin API client.
+// API client with automatic live/demo mode.
 //
-// The backend base URL is configurable via the VITE_API_BASE build-time env var:
-//   - Local dev (default): leave it unset. Requests use relative "/api" paths,
-//     which the Vite dev server proxies to http://127.0.0.1:8000 (see vite.config.js).
-//   - Hosted frontend (e.g. Vercel): set VITE_API_BASE to the URL of the backend
-//     you run yourself, e.g. "http://localhost:8000" or "https://your-backend.example".
-//     The backend must allow this frontend's origin via CORS (WEBVAST_CORS_ORIGINS).
+// Mode is decided once per session:
+//   - "live": talk to a real WebVAST backend over HTTP.
+//   - "demo": serve a self-contained captured scan from the browser, making no
+//     network requests (see ./demo/demoApi.js).
 //
-// Trailing slashes are trimmed so VITE_API_BASE="http://localhost:8000/" also works.
+// Selection:
+//   - VITE_DEMO truthy at build time  -> always demo.
+//   - otherwise probe the backend once; if it answers, "live"; if not, "demo".
+// This means the same build runs live locally (backend up) and automatically
+// shows the demo on a hosted URL that can't reach a backend. No public live
+// scanner is ever exposed.
+//
+// VITE_API_BASE sets the backend base URL in live mode (see .env.example).
+// Unset -> relative "/api" paths, proxied by the Vite dev server.
+
+import { demoApi } from "./demo/demoApi";
+
 const BASE = (import.meta.env.VITE_API_BASE || "").replace(/\/+$/, "");
+const FORCE_DEMO = !!import.meta.env.VITE_DEMO;
 
 const url = (path) => `${BASE}${path}`;
 
@@ -28,7 +38,8 @@ async function j(res) {
   return res.json();
 }
 
-export const api = {
+// --- live implementation --------------------------------------------------
+const liveApi = {
   modules: () => fetch(url("/api/modules")).then(j),
   listScans: () => fetch(url("/api/scans")).then(j),
   getScan: (id) => fetch(url(`/api/scans/${id}`)).then(j),
@@ -41,4 +52,47 @@ export const api = {
   deleteScan: (id) => fetch(url(`/api/scans/${id}`), { method: "DELETE" }).then(j),
   reportHtmlUrl: (id) => url(`/api/scans/${id}/report.html`),
   reportJsonUrl: (id) => url(`/api/scans/${id}/report.json`),
+};
+
+// --- mode resolution ------------------------------------------------------
+let resolved = null; // "live" | "demo" once known (sync-readable)
+let probe = null;
+
+export function resolveMode() {
+  if (FORCE_DEMO) {
+    resolved = "demo";
+    return Promise.resolve("demo");
+  }
+  if (!probe) {
+    probe = (async () => {
+      try {
+        const res = await fetch(url("/api/modules"), {
+          signal: AbortSignal.timeout(2500),
+        });
+        resolved = res.ok ? "live" : "demo";
+      } catch (_) {
+        resolved = "demo";
+      }
+      return resolved;
+    })();
+  }
+  return probe;
+}
+
+async function impl() {
+  return (await resolveMode()) === "demo" ? demoApi : liveApi;
+}
+
+// Reports are referenced as hrefs during render; by then mode is resolved
+// (a detail view only renders after getScan succeeded). Default to live.
+const reportImpl = () => (resolved === "demo" ? demoApi : liveApi);
+
+export const api = {
+  modules: async () => (await impl()).modules(),
+  listScans: async () => (await impl()).listScans(),
+  getScan: async (id) => (await impl()).getScan(id),
+  createScan: async (payload) => (await impl()).createScan(payload),
+  deleteScan: async (id) => (await impl()).deleteScan(id),
+  reportHtmlUrl: (id) => reportImpl().reportHtmlUrl(id),
+  reportJsonUrl: (id) => reportImpl().reportJsonUrl(id),
 };

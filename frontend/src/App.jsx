@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api } from "./api";
+import { api, resolveMode } from "./api";
 import NewScanForm from "./components/NewScanForm";
 import ScanList from "./components/ScanList";
 import ScanDetail from "./components/ScanDetail";
@@ -8,7 +8,12 @@ export default function App() {
   const [scans, setScans] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [detail, setDetail] = useState(null);
+  const [demo, setDemo] = useState(false);
   const pollRef = useRef(null);
+
+  useEffect(() => {
+    resolveMode().then((m) => setDemo(m === "demo"));
+  }, []);
 
   const refreshList = useCallback(async () => {
     try {
@@ -63,11 +68,29 @@ export default function App() {
               </p>
             </div>
           </div>
-          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200">
-            Authorized testing only
-          </span>
+          <div className="flex items-center gap-2">
+            {demo && (
+              <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 ring-1 ring-indigo-200">
+                Demo mode
+              </span>
+            )}
+            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200">
+              Authorized testing only
+            </span>
+          </div>
         </div>
       </header>
+
+      {demo && (
+        <div className="border-b border-indigo-100 bg-indigo-50/60">
+          <div className="mx-auto max-w-6xl px-6 py-2 text-xs text-indigo-800">
+            <span className="font-semibold">Demo mode —</span> showing a captured
+            sample scan of the bundled vulnerable target. No live backend is
+            connected and nothing is actually scanned. For real authorized
+            testing, run WebVAST locally (see the README).
+          </div>
+        </div>
+      )}
 
       <main className="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-6 py-6 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-5">
